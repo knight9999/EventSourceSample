@@ -13,3 +13,7 @@ for x in L:
   f.close()
   time.sleep(1)
 
+f = open(file, 'a')
+f.writelines( "Completed\n" )
+f.close()
+

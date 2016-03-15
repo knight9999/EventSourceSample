@@ -1,2 +1,4 @@
 sample02/tmp/*
 !sample02/tmp/readme.txt
+sample03/tmp/*
+!sample03/tmp/readme.txt

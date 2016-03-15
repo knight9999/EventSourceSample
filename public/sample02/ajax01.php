@@ -18,11 +18,14 @@ if (file_exists("./tmp/hello.txt")) {
   }
 }
 
-
+$name = $_POST["name"];
+$age = $_POST["age"];
 
 // exec("python ./hello.py > tmp/hello.txt 2>&1 &");
 exec("python ./hello.py > ./tmp/hello.txt 2>&1 &");
 $data = array ( "status" => "OK" ,
-                "message" => "Start Python Task" );
+                "message" => "Start Python Task",
+                "name" => $name ,
+                "age" => $age  );
 echo json_encode( $data );
 

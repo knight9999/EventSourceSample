@@ -1,0 +1,113 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ServerSentEvent Sample02</title>
+<script>
+  function ajax_post(options) {
+    var url = options.url;
+
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == 4) {
+        if (xhr.status==0) {
+          if (options.fail) {
+            options.fail( xhr.responseText );
+          }
+        } else {
+          if ( (200 <= xhr.status && xhr.status < 300) || xhr.status == 304 ) {
+            if (options.success) {
+              options.success( JSON.parse(xhr.responseText) ); // 戻り値はJSONと決め打ち
+            }
+          } 
+        }
+      }
+    }
+    xhr.open( "POST" , url );
+    xhr.setRequestHeader("content-type","application/x-www-form-urlencoded;charset=UTF-8");
+    var querys = [];
+    if (options.data != null) {
+      for (var key in options.data) {
+        var val = options.data[key];
+        querys.push( key + "=" + encodeURIComponent(val) );
+      }
+    }
+    var query = querys.join('&');
+    xhr.send( query );
+  }
+
+  var es = null;
+  function startCalc() {
+    ajax_post( {
+      url : "./ajax01.php",
+      data : { "name" : "hello" , "age" : 20 },
+      fail : function(text) { alert("ERROR:"+text); },
+      success : function(json) { 
+        console.log( "Ajax task is finished : " + JSON.stringify( json ) );
+      }
+    } ); 
+    startEventSource();
+  }
+  function startEventSource() {
+    stopCalc();
+    es = new EventSource("sse01.php");
+    es.addEventListener("start", function(e) {
+      console.log( "start : " + e.data );
+    });
+    es.addEventListener("progress", function(e) {
+      console.log( "progress : " + e.data );
+    });
+    es.addEventListener("stop" , function(e) {
+      console.log( "stop : " + e.data );
+      es.close();
+      es = null;
+      console.log( "Task 1 is completed!" );
+    });
+    es.onerror = function(e) {
+	    console.log( "ERROR OR RETRYING" );
+      if (es.readyState == EventSource.CLOSED) {
+        console.log("ReadyState Closed");
+        es.close();
+        es = null;
+      } else if (es.readyState == EventSource.CONNECTING) {
+        console.log("Retrying ... Please wait");
+      }
+    };
+  }
+  function stopCalc() {
+    if (es != null) {
+      es.close();
+      console.log("Closed");
+      es = null;
+    }
+  }
+
+</script>
+</head>
+<body>
+<a href="../index.html">Back</a><br/>
+  <h2>Ajaxタスク実行+EventSource</h2>
+  <p>
+sample03/tmpディレクトリを、Webサーバから書き込み出来るようにしておいてください。<br>
+  </p>
+<ul>
+  <li>
+    <button onClick="startCalc();">Server Task 1</button>
+  </li>
+  <li>
+    <button onClick="stopCalc();">Stop</button>
+  </li>
+</ul>
+  <p>
+Ajax自身で重たいタスクを実行する。具体的には、tmp/task.txtファイルに一行ずつ書き込みをしていく。
+その途中経過を、EventSourceで補足してローカル側に通知する。最終的にAjaxはCompletedの行が書き込んで終了する。
+EventSourceの方も、Completedの行を見つけると、そこで完了するようになっている。
+Sample02の時と異なり、AjaxとEventSourceは同時に実行開始し、（ほぼ）同時に終了する。
+  </p>
+  <p>
+なお、AjaxのプロセスとEventSourceのプロセスは、別のPHPプロセスになっているため、この二者間でデータを共有するのは難しい。今回のように、ファイルに何か書き込むことで情報（この場合は、タスクの実行経過）を共有するか、あるいはMemcacheやDatabaseなどを使って共有するしかない。Sessionでは共有出来ない。（Sessionはレスポンスを返さないといけないが、AjaxやEventSourceはレスポンスを返すの一度だけなので、動作中の情報をやりとりすることが出来ない）
+
+  </p>
+</body>
+</html>
+
+
