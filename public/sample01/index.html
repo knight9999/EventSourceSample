@@ -1,0 +1,88 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ServerSentEvent Sample01</title>
+<script>
+  var es = null;
+  function startCalc(url) {
+    stopCalc();
+    es = new EventSource(url);
+    es.addEventListener("start", function(e) {
+      console.log( "start : " + e.data );
+    });
+	  es.addEventListener("progress", function(e) {
+		  console.log( "progress : " + e.data );
+	  });
+    es.addEventListener("stop", function(e) {
+      console.log( "stop !" );
+      es.close();
+    });
+	  es.onmessage = function(e) {
+	  	console.log( "message : " + e.data );
+	  };
+    es.onerror = function(e) {
+	    console.log( "ERROR OR RETRYING" );
+      if (es.readyState == EventSource.CLOSED) {
+        console.log("ReadyState Closed");
+        es.close();
+      } else if (es.readyState == EventSource.CONNECTING) {
+        console.log("Retrying (" + url + ") ... Please wait");
+      }
+    }		
+  }
+  function stopCalc() {
+    if (es != null) {
+      es.close();
+      console.log("Closed");
+      es = null;
+    }
+  }
+</script>
+</head>
+<body>
+<a href="../index.html">Back</a><br/>
+  <p>簡単なタイマー処理</p>
+  <p>
+console.logで出力しているので、デベロッパーツールで動作を確認してください。
+  </p>
+<ul>
+<li>
+単純に5回カウントするループ<br/>
+progessイベントを発行<br/>
+retryが発生するため、無限にループします<br/>
+<button onClick="startCalc('sse01.php');">Timer 1</button>
+</li>
+<li>
+URLパラメータでカウント数を渡すループ<br/>
+イベントにひも付かないメッセージ(data)も出力<br/>
+retryが発生するため、無限にループします<br/>
+<button onClick="startCalc('sse02.php?count=5');">Timer 2</button>
+</li>
+<li>
+last-event-idを使った継続。<br/>
+PHP側からはidで毎回idを送る。EventSource側は、Retry時に最後のid<br>
+をサーバーに再送するので、PHP側はそのidを元に前回の続きから動作<br>
+するように実装。このため、3回カウントすると一度接続が切れるが、<br>
+Retryでカウントは継続する。Retryは1秒で行うようにしてある。<br>
+30までカウントすると、自動的にstopする。<br>
+<button onClick="startCalc('sse03.php');">Timer 3</button>
+</li>
+<li>
+<button onClick="stopCalc();">Stop</button>
+</li>
+</ul>
+  <p>
+EventSourceオブジェクトはプログラム中１つしかないので、Timer 1,2,3の
+うち１つしか動作しません。一つを動かすと他は止まります。カウントが終了し
+ても、3秒経つと自動的に接続しなおします。(これはEventSourceの標準機能で、
+コネクションが切れても、自動的に繋ぎ直します。retryで再接続までの時間を設
+定可能）Timer 1,2では、繋ぎ直すと最初からカウントしなおしです。
+  </p>
+  <p>
+使わなくなったEventSourceオブジェクトは、必ずcloseしてください。そうしないと、
+いつまでもretryを続けます。
+
+</body>
+</html>
+
+

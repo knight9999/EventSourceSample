@@ -1,0 +1,38 @@
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ServerSentEvent Sample02</title>
+<script>
+  function startCalc() {
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == 4) {
+        if (xhr.status==0) {
+          alert("Ajax Fail");
+        } else {
+          if ( (200 <= xhr.status && xhr.status < 300) || xhr.status == 304 ) {
+            alert("OK:" + xhr.responseText);
+          } 
+        }
+      }
+    }
+    xhr.open("POST", "asse01.php");
+    var data = "hogehoge";
+    xhr.send( data );
+  }
+</script>
+</head>
+<body>
+<a href="../index.html">Back</a><br/>
+  <p>Ajax+EventSource</p>
+ Under Constructing
+
+<ul>
+  <li>
+    <button onClick="startCalc();">Server Task 1</button>
+  </li>
+</ul>
+</body>
+</html>
+
+

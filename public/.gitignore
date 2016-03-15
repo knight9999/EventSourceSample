@@ -1,0 +1,2 @@
+sample02/tmp/*
+!sample02/tmp/readme.txt
