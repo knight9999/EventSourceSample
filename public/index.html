@@ -6,7 +6,7 @@
       <ul>
         <li>
           <dt>
-            <a href="sample01/index.html">簡単なタイマー処理</a>
+            <a href="sample01/index.html">Sample01: 簡単なタイマー処理</a>
           </dt>
           <dd>
            EventSourceを単体で使った簡単なサンプル。EventSourceは、サーバーからローカルにデータを送る機能だけなので、双方向通信は出来ない。また、GET処理のみなので、ローカルから送れるデータは貧弱だが、これだけで実装出来るものを扱った。
@@ -14,7 +14,7 @@
         </li>
         <li>
           <dt>
-            <a href="sample02/index.html">Ajaxバックグラウンドタスク起動+EventSource</a>
+            <a href="sample02/index.html">Sample02: Ajaxバックグラウンドタスク起動+EventSource</a>
           </dt>
           <dd>
            Ajaxでなんらかのサーバー側スクリプトをバックグラウンドで起動し、その後、EventSourceでサーバー側スクリプトの実行経過をローカル側に表示するサンプル。Ajax自体では重い処理を行うわけではない。
@@ -22,7 +22,7 @@
         </li>
         <li>
           <dt>
-            <a href="sample03/index.html">Ajaxヘビータスク実行+EventSource</a>
+            <a href="sample03/index.html">Sample03: Ajaxヘビータスク実行+EventSource</a>
           </dt>
           <dd>
            Ajax自身でなんらからの重たいタスクを実行し、その実行経過をEventSourceにより補足してローカル側に表示するサンプル。
@@ -30,5 +30,14 @@
         </li>
 
       </ul> 
+      <p>
+        補足事項：今回のsample02/sample03では、1つのサーバー側タスクに対して、1つのEventSourceで途中経過を捕捉している。しかし、これだとタスクが10個あれば、EventSourceも10個必要になり、コネクションも10個使ってしまうので望ましくない。（Webサーバーの設定によっては、１つのクライアントで2つまでしかコネクションを使えかったりするため）コネクションを節約するためには、タスクが複数あっても、途中経過をチェックするEventSourceは1つだけにする実装が必要。
+<br>
+        補足事項2：IEではEventSourceに対応していないが、EventSourceを使えるようにするPolyfillsがある。<br>
+        <a href="https://github.com/remy/polyfills/blob/master/EventSource.js">https://github.com/remy/polyfills/blob/master/EventSource.js</a>
+      </p>
+      <p>
+        補足事項3：個人的にはSample02の方法で、SSEではなく通常のAjaxでポーリングしていく方が、簡単で十分な機能がある気がします。
+      </p>
   </body>
 </html>
