@@ -1,7 +1,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>ServerSentEvent Sample02</title>
+<title>ServerSentEvent Sample03</title>
 <script>
   function ajax_post(options) {
     var url = options.url;
@@ -36,20 +36,20 @@
   }
 
   var es = null;
-  function startCalc() {
+  function startCalc(ajax_url,sse_url) {
     ajax_post( {
-      url : "./ajax01.php",
+      url : ajax_url,
       data : { "name" : "hello" , "age" : 20 },
       fail : function(text) { alert("ERROR:"+text); },
       success : function(json) { 
-        console.log( "Ajax task is finished : " + JSON.stringify( json ) );
+        console.log( "Ajax task (" + ajax_url + ") is finished : " + JSON.stringify( json ) );
       }
     } ); 
-    startEventSource();
+    startEventSource(sse_url);
   }
-  function startEventSource() {
+  function startEventSource(url) {
     stopCalc();
-    es = new EventSource("sse01.php");
+    es = new EventSource(url);
     es.addEventListener("start", function(e) {
       console.log( "start : " + e.data );
     });
@@ -60,7 +60,7 @@
       console.log( "stop : " + e.data );
       es.close();
       es = null;
-      console.log( "Task 1 is completed!" );
+      console.log( "Task is completed!" );
     });
     es.onerror = function(e) {
 	    console.log( "ERROR OR RETRYING" );
@@ -85,26 +85,37 @@
 </head>
 <body>
 <a href="../index.html">Back</a><br/>
-  <h2>Ajaxタスク実行+EventSource</h2>
+  <h2>Ajaxヘビータスク実行+EventSource</h2>
   <p>
 sample03/tmpディレクトリを、Webサーバから書き込み出来るようにしておいてください。<br>
   </p>
 <ul>
   <li>
-    <button onClick="startCalc();">Server Task 1</button>
+    ファイルに書き込みことで、タスクの途中経過の情報を共有する<br>
+    <button onClick="startCalc('ajax01.php','sse01.php');">Server Task 1</button>
+  </li>
+  <li>
+    セッションを使って、タスクの途中経過の情報を共有する。セッションを<br>
+使うため、PHPコードのヘッダ部で一度session_startを実行している。また、<br>
+セッションを二つのプロセスで同時に開いたままには出来ないため、使い終わっ<br>
+たらすぐにsesseion_write_closeを実行している。<br>
+    <button onClick="startCalc('ajax02.php','sse02.php');">Server Task 2</button>
   </li>
   <li>
     <button onClick="stopCalc();">Stop</button>
   </li>
 </ul>
   <p>
-Ajax自身で重たいタスクを実行する。具体的には、tmp/task.txtファイルに一行ずつ書き込みをしていく。
-その途中経過を、EventSourceで補足してローカル側に通知する。最終的にAjaxはCompletedの行が書き込んで終了する。
-EventSourceの方も、Completedの行を見つけると、そこで完了するようになっている。
+Ajax自身で重たいタスクを実行する。具体的には、Task 1でtmp/task.txtファイルに一行ずつ書き込み、Task 2で$_SESSIONの
+書き換えをしていく。
+その途中経過を、EventSourceで補足してローカル側に通知する。最終的にAjaxはCompletedの行を書き込んで終了する。
+EventSourceの方も、Completedを見つけると、そこで完了するようになっている。
 Sample02の時と異なり、AjaxとEventSourceは同時に実行開始し、（ほぼ）同時に終了する。
   </p>
   <p>
-なお、AjaxのプロセスとEventSourceのプロセスは、別のPHPプロセスになっているため、この二者間でデータを共有するのは難しい。今回のように、ファイルに何か書き込むことで情報（この場合は、タスクの実行経過）を共有するか、あるいはMemcacheやDatabaseなどを使って共有するしかない。Sessionでは共有出来ない。（Sessionはレスポンスを返さないといけないが、AjaxやEventSourceはレスポンスを返すの一度だけなので、動作中の情報をやりとりすることが出来ない）
+なお、AjaxのプロセスとEventSourceのプロセスは、同じPHPではあるが、別のプロセスになっているため、この二者間でデータを共有するのは難しい。
+Task 1では、tmp/task.txtに途中経過を書き込むことで、ajaxとsseのプロセスで情報を共有している。
+Task 2では、セッションを使ってajaxとsseのプロセスで情報を共有している。
 
   </p>
 </body>
