@@ -1,0 +1,21 @@
+{
+  "name": "sample2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dest/entry_loop.js",
+  "scripts": {
+    "start": "node ./dest/main.js",
+    "compile": "gulp compile",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "eventsource": "^0.2.1"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.10.0",
+    "gulp": "^3.9.1",
+    "gulp-coffee": "^2.3.1"
+  }
+}
